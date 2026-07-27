@@ -1,0 +1,11 @@
+# Initialize sample names
+ls -1 yes_phenotype_data/*_R1.fq.gz | sed 's/yes_phenotype_data\///g' | sed 's/_R1.fq.gz//g' > sample_names.txt.temp
+
+# Add header
+echo sample,r1,r2 > metadata.csv
+
+# add file names
+awk -v DIR="$PWD/yes_phenotype_data/" 'BEGIN {OFS=","} {print $1, DIR $1 "_R1.fq.gz", DIR $1 "_R2.fq.gz"}' sample_names.txt.temp >> metadata.csv
+
+# Clean Up
+rm sample_names.txt.temp
