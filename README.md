@@ -27,7 +27,9 @@ As evidenced by the linear models, pHK and pL34 have the most significant relati
 Some families clearly score better than others. We want a high pHK and a low pL34. This means the tree is killing off the larvae before they reach instars 3 and 4.
 </details>
 
-# Attempt 1: 369 samples (both pheno and geno data)
+# Attempt 1: 369 samples (started 7/27/2026)
+For my first GWAS attempt, I am going to run it on the 369 individuals that we have both genotype and phenotype data on. This includes greenish and whiteish ash, and both sexes. I am putting all of the associated script in a parent folder called **attempt1_7-27-2026**.
+
 ## Step 2: Variant Calling
 For this, I am using the **vary_cool** pipeline developed by the incredible, amazing, wonderful Staton lab. The github is available [here](https://github.com/statonlab/vary_cool). All scripts used in this are in folder **Step2**. It takes raw fastq files and gives you a nice VCF file. 
 
