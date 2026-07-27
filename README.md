@@ -1,7 +1,7 @@
 # GWAS Analysis of Lingering Ash
 The goal of this analysis is to identify genomic regions that may harbor some genetic mechanism to EAB resistance in ash (*Fraxinus*). 
 
-<img width="875" height="540" alt="image" src="https://github.com/user-attachments/assets/3e76be94-c3d2-453a-aab1-731a9084fa59" />
+<img width="500" alt="Genomics guides" src="https://github.com/user-attachments/assets/c20df508-87c1-42b7-ac27-547db78bc1c2" />
 
 ## Overview of Input Data
 I have 369 trees ranging from pure green ash (*F. pennsylvanica*) to pure white as (*F. americana*) from the USFS NRS with both genomic and phenotypic data. There is also a gradient of hybrids. These trees have been assessed for disease phenotype which is a proxy for resistance.
