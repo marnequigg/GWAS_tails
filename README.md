@@ -13,6 +13,9 @@ Kinship will need to be accounted for in the GWAS models. I have individuals fro
 ## Step 1: Phenotype Analysis
 I was sent the phenotype information from the collaborators at the USFS. There are a few values that I think will be useful to determine phenotype: pHK and pL34. pHK is the proportion of larvae that were killed by the host tree. pL34 are the proportion of larvae that were at instars 3 or 4. In the heritability paper, it mentions that pHK is the best metric for phenotype for disease resistance/susceptibility. I ran a few basic linear models to determine association between the phenotype variables (below). This was ran in R and the associated script is in folder **Step1**.
 
+<details>
+  <summary>Phenotype Visuals</summary>
+
 <img width="850" height="768" alt="linear_models" src="https://github.com/user-attachments/assets/cf24bbe4-46e5-4df6-ab8e-6995e886a4d9" />
 
 As evidenced by the linear models, pHK and pL34 have the most significant relationships. Then, I checked to see how these values are distributed across families.
@@ -20,3 +23,4 @@ As evidenced by the linear models, pHK and pL34 have the most significant relati
 <img height="500" alt="mean and 95% CI plots of pHK and pL34 per family" src="https://github.com/user-attachments/assets/0a676705-e17d-4490-af9e-e3c1e284a580" />
 
 Some families clearly score better than others. We want a high pHK and a low pL34. This means the tree is killing off the larvae before they reach instars 3 and 4.
+</details>
