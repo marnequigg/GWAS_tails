@@ -1,0 +1,502 @@
+---
+title: "phenotype_prelim"
+author: "m quigg"
+date: "2026-07-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Phenotype Preliminary Analysis
+The purpose of this is to take a look at the resistance phenotype data the the USFS provided. They inoculated the trees with EAB eggs, then looked at the number of larvae that were remaining. 
+
+##Goal 
+See the distribution of the data to get an idea of what would be good covariables for the GWAS.
+
+##Prep
+```{r, include=FALSE}
+###activate packages
+library(tidyverse)
+library(patchwork)
+library(AICcmodavg)
+
+###set working directory
+setwd("C:/Users/mquig/Desktop/ash/GWAS_tails/phenotype")
+
+###import the file
+pheno_data=read.csv("LA-ProgenyTallyQCSAS_71426.csv", header = T)
+```
+
+After chatting with Zane, we realized that I was looking at all individuals, not just the ones we sequenced. So now, I want to rerun everything and incorporate it.
+```{r}
+###import the file
+inds_seq=read.csv("USFS_Tails_Metadata_2023.xlsx - Sex_IDs_11.22.25.csv", header = T)
+
+###redo the row names
+inds_seq=inds_seq %>% 
+  rename("IndShortName"=X.rname)
+
+###join the dataframes
+pheno_data=left_join(inds_seq, pheno_data, by = "IndShortName")
+
+###remove the inds that we have sequence data for but no phenotype data
+pheno_data=pheno_data %>% 
+  drop_na(pL34)
+```
+
+
+##USFS Relevant Stats
+
+###Proportion Host Kill (pHK or pTK)
+This is the number of larvae that host killed divided by the number of good eggs.
+```{r}
+###basic stats
+##max killed?
+max(pheno_data$pHK)
+#0.9166667
+##min killed
+min(pheno_data$pHK)
+#0=none
+
+##average
+mean(pheno_data$pHK)
+#0.2391576
+
+###distribution
+hist(pheno_data$pHK)
+#right skewed
+
+pHK_plot=ggplot(pheno_data, aes(x = pHK)) +
+  geom_histogram(bins = 10, color = "magenta4", fill = "pink") +
+  labs(title = "Proportion of Host Kills") +
+  theme_classic()
+pHK_plot
+```
+Ok so hist() broke it into bins with 0.1 intervals. There are a lot of individuals in the 0-0.1 pHK category.
+
+###Realized Dose
+This is the number of good eggs per tree.
+```{r}
+max(pheno_data$RlzDose)
+min(pheno_data$RlzDose)
+hist(pheno_data$RlzDose)
+RlzDose_plot=ggplot(pheno_data, aes(x = RlzDose)) +
+  geom_histogram(bins = 10, color = "aquamarine3", fill = "aquamarine") +
+  labs(title = "Realized Dose of Good Eggs") +
+  theme_classic()
+RlzDose_plot
+```
+
+###Proportion 3 and 4 Instar Larvae
+This is the proportion of recovered larvae that made it to instars 3 and 4. This is a proxy for EAB survival.
+```{r}
+max(pheno_data$pL34)
+min(pheno_data$pL34)
+hist(pheno_data$pL34)
+pL34_plot=ggplot(pheno_data, aes(x = pL34)) +
+  geom_histogram(bins = 10, color = "purple4", fill = "mediumpurple1") +
+  labs(title = "Proportion of Larvae at Instars 3 or 4") +
+  theme_classic()
+pL34_plot
+```
+
+###Large Larvae
+This is the number of large, surviving larvae at instars 3 and 4.
+```{r}
+max(pheno_data$LgLarv)
+min(pheno_data$LgLarv)
+hist(pheno_data$LgLarv)
+LgLarv_plot=ggplot(pheno_data, aes(x = LgLarv)) +
+  geom_histogram(bins = 10, color = "yellowgreen", fill = "darkolivegreen1") +
+  labs(title = "Number of Large Larvae") +
+  theme_classic()
+LgLarv_plot
+```
+###Make a figure
+```{r}
+(pHK_plot + pL34_plot)/(RlzDose_plot + LgLarv_plot)
+```
+###Comparisons
+Meg suggested that I run some little analyses to see if any of these variables are associated.
+
+####pHK and pL34
+```{r}
+###pHK vs pL34
+##make the graph
+pHK_vs_pL34_plot=ggplot(pheno_data, aes(x = pHK, y = pL34)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "pink", fill = "magenta4") +
+  theme_classic()
+pHK_vs_pL34_plot
+
+##make the model
+pHK_vs_pL34_lm=lm(pL34 ~ pHK, pheno_data)
+#intercept=0.8062
+#-0.8184
+
+
+###pL34 vs pHK
+##make the graph
+pL34_vs_pHK_plot=ggplot(pheno_data, aes(x = pL34, y = pHK)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "aquamarine3", fill = "aquamarine") +
+  theme_classic()
+pL34_vs_pHK_plot
+
+##make the model
+pL34_vs_pHK_lm=lm(pHK ~ pL34, pheno_data)
+#intercept=0.7851
+#-0.8748
+```
+
+###pHK and RlzDose
+```{r}
+###pHK vs RlzDose
+##make the graph
+pHK_vs_RlzDose_plot=ggplot(pheno_data, aes(x = pHK, y = RlzDose)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "pink", fill = "magenta4") +
+  theme_classic()
+pHK_vs_RlzDose_plot
+
+##make the model
+pHK_vs_RlzDose_lm=lm(RlzDose ~ pHK, pheno_data)
+pHK_vs_RlzDose_lm
+#intercept=388.11
+#33.58
+
+###RlzDose vs pHK
+##make the graph
+RlzDose_vs_pHK_plot=ggplot(pheno_data, aes(x = RlzDose, y = pHK)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "purple4", fill = "mediumpurple1") +
+  theme_classic()
+RlzDose_vs_pHK_plot
+
+##make the model
+Rlzdose_vs_pHK_lm=lm(pHK ~ RlzDose, pheno_data)
+Rlzdose_vs_pHK_lm
+#intercept=-0.137213
+#0.001053
+```
+
+####RlzDose and pL34
+```{r}
+###pHK vs pL34
+##make the graph
+RlzDose_vs_pL34_plot=ggplot(pheno_data, aes(x = RlzDose, y = pL34)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "purple4", fill = "mediumpurple1") +
+  theme_classic()
+RlzDose_vs_pL34_plot
+
+##make the model
+RlzDose_vs_pL34_lm=lm(pL34 ~ RlzDose, pheno_data)
+RlzDose_vs_pL34_lm
+#intercept=1.000288
+#-0.001067
+
+
+###pL34 vs pHK
+##make the graph
+pL34_vs_RlzDose_plot=ggplot(pheno_data, aes(x = pL34, y = RlzDose)) +
+  geom_point() +
+  geom_smooth(method = "lm", color = "aquamarine3", fill = "aquamarine") +
+  theme_classic()
+pL34_vs_RlzDose_plot
+
+##make the model
+pL34_vs_RlzDose_lm=lm(RlzDose ~ pL34, pheno_data)
+pL34_vs_RlzDose_lm
+#intercept=418.52
+#-36.39
+```
+###compare AIC scores
+```{r}
+AIC(pHK_vs_pL34_lm, pHK_vs_RlzDose_lm, pL34_vs_pHK_lm, pL34_vs_RlzDose_lm, Rlzdose_vs_pHK_lm, RlzDose_vs_pL34_lm)
+```
+I don't think this is really telling us anything.
+
+###Make a figure
+```{r}
+(pHK_vs_pL34_plot + pHK_vs_RlzDose_plot) / (pL34_vs_pHK_plot + pL34_vs_RlzDose_plot) / (RlzDose_vs_pHK_plot + RlzDose_vs_pL34_plot)
+```
+
+
+
+##Other Relevant Visuals
+I want to make a stacked bar chart with the good and bad eggs per tree. This is going to have a lot of bars, but I think it'll work.
+```{r}
+###create the data frame
+egg=pheno_data %>% 
+  dplyr::select(IndShortName, GoodEgg, BADEGG) %>% 
+  rename("Good" = GoodEgg, "Bad" = BADEGG)
+egg_long=pivot_longer(egg, cols = c(Good, Bad), names_to = "egg", values_to = "count")
+
+###graph it
+ggplot(egg_long, aes(x = IndShortName, y = count, fill = egg)) +
+  geom_bar(position="stack", stat="identity")
+```
+So that doesn't look like what I wanted, but it works!
+
+
+###Parents
+```{r}
+summary_families=pheno_data %>% 
+  group_by(Family) %>% 
+  summarise(n=length(Family)) %>% 
+  ungroup()
+summary_moms=pheno_data %>% 
+  group_by(FemPar) %>% 
+  summarise(n=length(FemPar)) %>% 
+  ungroup()
+summary_dads=pheno_data %>% 
+  group_by(MalePar) %>% 
+  summarise(n=length(MalePar)) %>% 
+  ungroup()
+
+family_plot=ggplot(summary_families, aes(x = Family, y = n)) +
+  geom_bar(stat = "identity", color = "purple4", fill = "mediumpurple1") +
+  labs(title = "Number per of Trees per Family", y = "count", x = "") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+family_plot
+
+female_plot=ggplot(summary_moms, aes(x = FemPar, y = n)) +
+  geom_bar(stat = "identity", color = "magenta4", fill = "pink") +
+  labs(title = "Progeny from Each Female Parent", y = "count", x = "") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+female_plot
+
+male_plot=ggplot(summary_dads, aes(x = MalePar, y = n)) +
+  geom_bar(stat = "identity", color = "steelblue", fill = "lightskyblue1") +
+  labs(title = "Progeny from Each Male Parent", y = "count", x = "") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+male_plot
+
+###make a figure
+family_plot/(female_plot+male_plot)
+```
+
+##Family Values <3
+Now, I want to show how the phenotyping values vary by family.
+
+###pHK
+```{r}
+family_pHK=pheno_data %>% 
+  group_by(Family) %>% 
+  dplyr::summarise(n=sum(!is.na(pHK)), 
+                   mean=mean(pHK), 
+                   sd=sd(pHK), 
+                   se=sd/sqrt(n), 
+                   lower.CI=mean-(1.96*se), 
+                   upper.CI=mean+(1.96*se)) %>% 
+  ungroup()
+
+family_pHK_plot=ggplot(family_pHK, aes(x = Family, y = mean)) +
+  geom_line(size = 1.5, color = "magenta4") +
+  geom_errorbar(aes(ymin = lower.CI, ymax = upper.CI),
+                width = 0.2, color = "magenta4") +
+  geom_point(size = 3, shape = 21, fill = "pink", color = "magenta4") +
+  labs(x = "Family", y = "pHK") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), legend.position = "none")
+family_pHK_plot
+
+ggplot(pheno_data, aes(x = pHK)) +
+  geom_histogram(color = "magenta4", fill = "pink", bins = 10) +
+  facet_wrap(~ Family) +
+  labs(y = "Count", x = "pHK") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+###pL34
+```{r}
+family_pL34=pheno_data %>% 
+  group_by(Family) %>% 
+  dplyr::summarise(n=sum(!is.na(pL34)), 
+                   mean=mean(pL34), 
+                   sd=sd(pL34), 
+                   se=sd/sqrt(n), 
+                   lower.CI=mean-(1.96*se), 
+                   upper.CI=mean+(1.96*se)) %>% 
+  ungroup()
+
+family_pL43_plot=ggplot(family_pL34, aes(x = Family, y = mean)) +
+  geom_line(size = 1.5, color = "purple4") +
+  geom_errorbar(aes(ymin = lower.CI, ymax = upper.CI),
+                width = 0.2, color = "purple4") +
+  geom_point(size = 3, shape = 21, fill = "mediumpurple1", color = "purple4") +
+  labs(x = "Family", y = "pL34") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), legend.position = "none")
+family_pL43_plot
+
+ggplot(pheno_data, aes(x = pL34)) +
+  geom_histogram(color = "purple4", fill = "mediumpurple1", bins = 10) +
+  facet_wrap(~ Family) +
+  labs(y = "Count", x = "pL34") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+```
+
+###RlzDose
+```{r}
+family_RlzDose=pheno_data %>% 
+  group_by(Family) %>% 
+  dplyr::summarise(n=sum(!is.na(RlzDose)), 
+                   mean=mean(RlzDose), 
+                   sd=sd(RlzDose), 
+                   se=sd/sqrt(n), 
+                   lower.CI=mean-(1.96*se), 
+                   upper.CI=mean+(1.96*se)) %>% 
+  ungroup()
+
+family_RlzDose_plot=ggplot(family_RlzDose, aes(x = Family, y = mean)) +
+  geom_line(size = 1.5, color = "aquamarine3") +
+  geom_errorbar(aes(ymin = lower.CI, ymax = upper.CI),
+                width = 0.2, color = "aquamarine3") +
+  geom_point(size = 3, shape = 21, fill = "aquamarine", color = "aquamarine3") +
+  labs(x = "Family", y = "RlzDose") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), legend.position = "none")
+family_RlzDose_plot
+```
+
+###LgLarv
+```{r}
+family_LgLarv=pheno_data %>% 
+  group_by(Family) %>% 
+  dplyr::summarise(n=sum(!is.na(LgLarv)), 
+                   mean=mean(LgLarv), 
+                   sd=sd(LgLarv), 
+                   se=sd/sqrt(n), 
+                   lower.CI=mean-(1.96*se), 
+                   upper.CI=mean+(1.96*se)) %>% 
+  ungroup()
+
+family_LgLarv_plot=ggplot(family_LgLarv, aes(x = Family, y = mean)) +
+  geom_line(size = 1.5, color = "yellowgreen") +
+  geom_errorbar(aes(ymin = lower.CI, ymax = upper.CI),
+                width = 0.2, color = "yellowgreen") +
+  geom_point(size = 3, shape = 21, fill = "darkolivegreen1", color = "yellowgreen") +
+  labs(x = "Family", y = "LgLarv") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), legend.position = "none")
+family_LgLarv_plot
+```
+
+###figure
+```{r}
+family_pHK_plot / family_pL43_plot
+```
+
+##Species Distributions
+Now, I want to take a look at the absolute disaster that is the species groupings.
+
+###Add the species info
+I created a column called "Species-ish" which lists if it is a hybrid and what kind. There are a lot of combos here.
+```{r}
+###import the data
+species=read.csv("USFS_Tails_Metadata_2023.xlsx - Parentage_Species_IDs(Marne'sVersion).csv", header = T)
+
+###add of the species info
+species_pheno_data=left_join(pheno_data, species, by = "Family")
+```
+
+###pHK
+```{r}
+species_pHK=species_pheno_data %>% 
+  group_by(Species.ish) %>% 
+  dplyr::summarise(n=sum(!is.na(pHK)), 
+                   mean=mean(pHK), 
+                   sd=sd(pHK), 
+                   se=sd/sqrt(n), 
+                   lower.CI=mean-(1.96*se), 
+                   upper.CI=mean+(1.96*se)) %>% 
+  ungroup()
+
+species_pHK_plot=ggplot(species_pHK, aes(x = Species.ish, y = mean)) +
+  geom_line(size = 1.5, color = "magenta4") +
+  geom_errorbar(aes(ymin = lower.CI, ymax = upper.CI),
+                width = 0.2, color = "magenta4") +
+  geom_point(size = 3, shape = 21, fill = "pink", color = "magenta4") +
+  labs(x = "Species", y = "pHK") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), legend.position = "none")
+species_pHK_plot
+
+species_pHK_facet=ggplot(species_pheno_data, aes(x = pHK)) +
+  geom_histogram(color = "magenta4", fill = "pink", bins = 10) +
+  facet_wrap(~ Species.ish) +
+  labs(y = "Count", x = "pHK") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+species_pHK_facet
+```
+
+###pL34
+```{r}
+species_pL34=species_pheno_data %>% 
+  group_by(Species.ish) %>% 
+  dplyr::summarise(n=sum(!is.na(pL34)), 
+                   mean=mean(pL34), 
+                   sd=sd(pL34), 
+                   se=sd/sqrt(n), 
+                   lower.CI=mean-(1.96*se), 
+                   upper.CI=mean+(1.96*se)) %>% 
+  ungroup()
+
+species_pL43_plot=ggplot(species_pL34, aes(x = Species.ish, y = mean)) +
+  geom_line(size = 1.5, color = "purple4") +
+  geom_errorbar(aes(ymin = lower.CI, ymax = upper.CI),
+                width = 0.2, color = "purple4") +
+  geom_point(size = 3, shape = 21, fill = "mediumpurple1", color = "purple4") +
+  labs(x = "Species", y = "pL34") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1), legend.position = "none")
+species_pL43_plot
+
+species_pL34_facet=ggplot(species_pheno_data, aes(x = pL34)) +
+  geom_histogram(color = "purple4", fill = "mediumpurple1", bins = 10) +
+  facet_wrap(~ Species.ish) +
+  labs(y = "Count", x = "pL34") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+species_pL34_facet
+```
+
+###making figures
+```{r}
+(species_pHK_plot + species_pL43_plot) / (species_pHK_facet + species_pL34_facet)
+```
+That's not a great figure but they look interesting on their own.
+
+##What do we need?
+So we have a fair number of individuals that don't have phenotype or species data. I need to identify what individuals were missing phenotype data for, and which families don't have species data.
+
+###No phenotype data
+```{r}
+###join the dataframes
+pheno_data_withNA=left_join(inds_seq, pheno_data, by = "IndShortName")
+
+###remove the inds that we have sequence data for but no phenotype data
+missing_pheno=pheno_data_withNA %>% 
+  filter(is.na(pHK)) %>% 
+  dplyr::select(IndShortName)
+
+###save the csv
+write.csv(missing_pheno, "C:/Users/mquig/Desktop/ash/GWAS_tails/phenotype/missing_phenotypes.csv")
+```
+
+###no species data
+```{r}
+missing_species=species_pheno_data %>% 
+  filter(is.na(Species.ish)) %>% 
+  dplyr::select(IndShortName, Family)
+```
