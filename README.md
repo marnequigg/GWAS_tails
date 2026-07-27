@@ -24,3 +24,10 @@ As evidenced by the linear models, pHK and pL34 have the most significant relati
 
 Some families clearly score better than others. We want a high pHK and a low pL34. This means the tree is killing off the larvae before they reach instars 3 and 4.
 </details>
+
+# Attempt 1: 369 samples (both pheno and geno data)
+## Step 2: Variant Calling
+For this, I am using the **vary_cool** pipeline developed by the incredible, amazing, wonderful Staton lab. The github is available [here](https://github.com/statonlab/vary_cool). All scripts used in this are in folder **Step2**. It takes raw fastq files and gives you a nice VCF file. 
+
+  1) I moved all of the files from the shared directory to my scratch folder with the script *00.move_files.sh*.
+  2) I used Claude to write a script that takes the sampleID from a csv file and moves it into a folder. In this case, I made a csv file with all of the individuals that we have phenotype data for and directed them into a new folder. This is script *00.move_files_csv.sh*. This does not use slurm, so execute it [bash organize_fastq.sh ./fastq_files samples.csv ./matched_samples]. 
