@@ -926,18 +926,18 @@ e.g. subsetted and filtered VCF and .csv files
 ### Input Files
   1) VCF file
 
-       -SNP data from the vary_cool pipeline
+       - SNP data from the vary_cool pipeline
   3) phenotype file
 
-       -csv file with the first column as the sample IDs and the second as the phenotype (probably pHK) with a header
+       - csv file with the first column as the sample IDs and the second as the phenotype (probably pHK) with a header
   4) covariate file
 
-       -same format as the phenotype file but can only be used with the lm and lmm
-       -probably good to include year as a covariate or incorporate as a random effect somehow
+       - same format as the phenotype file but can only be used with the lm and lmm
+       - probably good to include year as a covariate or incorporate as a random effect somehow
   5) gene file
 
-       -gene regions in the genome
-       -need to get from Zane
+       - gene regions in the genome
+       - need to get from Zane
   6) relatedness matrix
 
-       -it will calculate by default
+       - it will calculate by default
