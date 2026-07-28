@@ -542,14 +542,14 @@ For this, I am using the **vary_cool** pipeline developed by the incredible, ama
   1) I moved all of the files from the shared directory to my scratch folder with the script *00.move_files.sh*.
      <details>
        <summary>Script</summary>
-       ```
+       ```{r}
        #!/bin/bash
-      #SBATCH --job-name=move_analysis
-      #SBATCH --nodes=1
-      #SBATCH --ntasks=1
-      #SBATCH --cpus-per-task=15
-#SBATCH --mem=32G
-#SBATCH -A ACF-UTK0011
+        #SBATCH --job-name=move_analysis
+        #SBATCH --nodes=1
+        #SBATCH --ntasks=1
+        #SBATCH --cpus-per-task=15
+        #SBATCH --mem=32G
+        #SBATCH -A ACF-UTK0011
 #SBATCH --partition=short
 #SBATCH --qos=short
 #SBATCH --output=logs/cp_fqgz_%j.out
