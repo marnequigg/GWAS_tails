@@ -698,14 +698,14 @@ rm sample_names.txt.temp
    </details>
 
 <details>
-   <summary>4) Finally, I ran the script. It took forever to make it to the top of the queue. The script is *02.run_vary_cool.sh*.</summary>
+   <summary>4) Finally, I ran the script. It took forever to make it to the top of the queue. The script is *02.run_vary_cool.sh*. Update: I switched to long-bigmem and it started running on 7/28/2026 @ 10:50am.</summary>
 
    ```bash
 #!/bin/bash
 #SBATCH -J SNP_call_attempt2
 #SBATCH -A ACF-UTK0032
-#SBATCH --partition=long
-#SBATCH --qos=long
+#SBATCH --partition=long-bigmem
+#SBATCH --qos=long-bigmem
 #SBATCH --nodes=1
 #SBATCH --ntasks=2
 #SBATCH --time=6-00:00:00
