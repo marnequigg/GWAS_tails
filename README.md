@@ -543,13 +543,14 @@ For this, I am using the **vary_cool** pipeline developed by the incredible, ama
      <details>
        <summary>Script</summary>
        ```{r}
-       #!/bin/bash
+         #!/bin/bash
         #SBATCH --job-name=move_analysis
         #SBATCH --nodes=1
         #SBATCH --ntasks=1
         #SBATCH --cpus-per-task=15
         #SBATCH --mem=32G
         #SBATCH -A ACF-UTK0011
+        ```
 #SBATCH --partition=short
 #SBATCH --qos=short
 #SBATCH --output=logs/cp_fqgz_%j.out
