@@ -737,3 +737,187 @@ nextflow /lustre/isaac24/scratch/mquigg1/tails_GWAS/00.vary_cool/vary_cool/main.
    ```
 
    </details>
+
+
+## Run GWAS
+Zane recommended two different options for analysis.
+  1) [vcf2gwas with GEMMA](https://github.com/frankvogt/vcf2gwas)
+  2) [GAPIT](https://github.com/jiabowang/GAPIT)
+I'm going to start with option 1) vcf2gwas.
+
+<details>
+  <summary>Options</summary>
+  -v / --vcf
+Specify genotype .vcf or .vcf.gz file (required).
+
+-pf / --pfile
+Specify phenotype file.
+
+-p / --pheno
+Specify phenotypes used for analysis:
+Type the phenotype name
+OR
+'1' selects first phenotype from phenotype file (second column), '2' the second phenotype (third column) and so on.
+
+-ap / --allphenotypes
+All phenotypes in the phenotype file will be used.
+
+-cf / --cfile
+Type 'PCA' to extract principal components from the VCF file
+OR
+Specify covariate file.
+
+-c / --covar
+If 'PCA' selected for the -cf / --cfile option, set the amount of PCs used for the analysis
+Else:
+Specify covariates used for analysis:
+Type the covariate name
+OR
+'1' selects first covariate from covariate file (second column), '2' the second covariate (third column) and so on.
+
+-ac / --allcovariates
+All covariates in the covariate file will be used.
+
+-chr/ --chromosome
+Specify chromosomes for analysis.
+By default, all chromosomes will be analyzed.
+Input value has to be in the same format as the CHROM value in the VCF file
+
+-gf / --genefile
+Specify gene file.
+
+-gt / --genethresh
+Set a gene distance threshold (in bp) when comparing genes to SNPs from GEMMA results.
+Only SNPs with distances below threshold will be considered for comparison of each gene.
+
+-k / --relmatrix
+Specify relatedness matrix file.
+
+-o/ --output
+Change the output directory.
+Default is the current working directory.
+
+GEMMA affiliated options:
+-lm {1,2,3,4}
+Association Tests with a Linear Model.
+optional: specify which frequentist test to use (default: 1)
+1: performs Wald test
+2: performs likelihood ratio test
+3: performs score test
+4: performs all three tests
+
+-gk {1,2}
+Estimate Relatedness Matrix from genotypes.
+optional: specify which relatedness matrix to estimate (default: 1)
+1: calculates the centered relatedness matrix
+2: calculates the standardized relatedness matrix
+
+-eigen
+Perform Eigen-Decomposition of the Relatedness Matrix.
+
+-lmm {1,2,3,4}
+Association Tests with Univariate Linear Mixed Models.
+optional: specify which frequentist test to use (default: 1)
+1: performs Wald test
+2: performs likelihood ratio test
+3: performs score test
+4: performs all three tests
+To perform Association Tests with Multivariate Linear Mixed Models, set '-multi' option
+
+-bslmm {1,2,3}
+Fit a Bayesian Sparse Linear Mixed Model
+optional: specify which model to fit (default: 1)
+1: fits a standard linear BSLMM
+2: fits a ridge regression/GBLUP
+3: fits a probit BSLMM
+
+-m / --multi
+performs multivariate linear mixed model analysis with specified phenotypes
+only active in combination with '-lmm' option
+
+-w / --burn
+specify burn-in steps when using BSLMM model.
+Default value: 100,000
+
+-s / --sampling
+specify sampling steps when using BSLMM model.
+Default value: 1,000,000
+
+-smax / --snpmax
+specify maximum value for 'gamma' when using BSLMM model.
+Default value: 300
+
+Miscellaneous options:
+-M / --memory
+set memory usage (in MB)
+if not specified, half of total memory will be used
+
+-T / --threads
+set core usage
+if not specified, all available logical cores minus 1 will be used
+
+-q / --minaf
+minimum minor allele frequency (MAF) of sites to be used (default: 0.01)
+input value needs to be a value between 0.0 and 1.0
+
+-ts / --topsnp
+number of top SNPs of each phenotype to be summarized (default: 15)
+after analysis the specified amount of top SNPs from each phenotype will be considered
+
+-P / --PCA
+perform PCA on phenotypes and use resulting PCs as phenotypes for GEMMA analysis
+optional: set amount of PCs to be calculated (default: 2)
+recommended amount of PCs: 2 - 10
+
+-U / --UMAP
+perform UMAP on phenotypes and use resulting embeddings as phenotypes for GEMMA analysis
+optional: set amount of embeddings to be calculated (default: 2)
+recommended amount of embeddings: 1 - 5
+
+-um / --umapmetric
+choose the metric for UMAP to use to compute the distances in high dimensional space
+Default: euclidean
+Available metrics: euclidean, manhattan, braycurtis, cosine, hamming, jaccard, hellinger
+
+-t / --transform
+transform the input phenotype file
+applies the selected metric across rows
+Default: wisconsin
+Available metrics: total, max, normalize, range, standardize, hellinger, log, logp1, pa, wisconsin
+
+-asc / --ascovariate Use dimensionality reduction of phenotype file via UMAP or PCA as covariates
+Only works in conjunction with -U / --UMAP or -P / --PCA
+
+-KC / --kcpca Kinship calculation via principal component analysis instead of GEMMA's internal method
+optional: r-squared threshold for LD pruning (default: 0.5)
+
+-sv / --sigval
+set value where to draw significant line in manhattan plot
+represents -log10(1e-).
+Default: Bonferroni corrected with total amount of SNPs used for analysis.
+set to '0' to disable line
+
+-nl / --nolabel
+remove the SNP labels in the manhattan plot
+reduces runtime if analysis results in many significant SNPs
+
+-nq / --noqc
+deactivate Quality Control plots
+reduces runtime
+
+-np / --noplot
+deactivate Manhattan and QQ-plots
+reduces runtime
+
+-fs/ --fontsize
+set the fontsize of plots.
+Default value: 26
+
+-sd / --seed
+perform UMAP with random seed
+reduces reproducibility
+
+-r / --retain
+keep all temporary intermediate files
+e.g. subsetted and filtered VCF and .csv files
+</details>
