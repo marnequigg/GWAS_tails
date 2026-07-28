@@ -596,7 +596,6 @@ For my first GWAS attempt, I am going to run it on the 369 individuals that we h
 
    </details>
 
-  3) I used Claude to write a script that takes the sampleID from a csv file and moves it into a folder. In this case, I made a csv file with all of the individuals that we have phenotype data for and directed them into a new folder. This is script *00.move_files_csv.sh*. This does not use slurm, so execute it [bash organize_fastq.sh ./fastq_files samples.csv ./matched_samples].
   <details>
    <summary>2) I used Claude to write a script that takes the sampleID from a csv file and moves it into a folder. In this case, I made a csv file with all of the individuals that we have phenotype data for and directed them into a new folder. This is script *00.move_files_csv.sh*. This does not use slurm, so execute it [bash organize_fastq.sh ./fastq_files samples.csv ./matched_samples].</summary>
 
@@ -678,5 +677,62 @@ echo "Files copied to: $OUTPUT_DIR"
 
    </details>
 
-  5) Next, I made a metadata table. Vary_cool is vary_particular about the metadata file so I copied some script from Zane. It is in *01.create.metadata*. That metadata file needs to be in the parent GWAS folder so it can be accessed by nextflow.
-  6) Finally, I ran the script. It took forever to make it to the top of the queue. The script is *02.run_vary_cool.sh*.
+  <details>
+   <summary>3) Next, I made a metadata table. Vary_cool is vary_particular about the metadata file so I copied some script from Zane. It is in *01.create.metadata*. That metadata file needs to be in the parent GWAS folder so it can be accessed by nextflow.</summary>
+
+   ```bash
+# Initialize sample names
+ls -1 yes_phenotype_data/*_R1.fq.gz | sed 's/yes_phenotype_data\///g' | sed 's/_R1.fq.gz//g' > sample_names.txt.temp
+
+# Add header
+echo sample,r1,r2 > metadata.csv
+
+# add file names
+awk -v DIR="$PWD/yes_phenotype_data/" 'BEGIN {OFS=","} {print $1, DIR $1 "_R1.fq.gz", DIR $1 "_R2.fq.gz"}' sample_names.txt.temp >> metadata.csv
+
+# Clean Up
+rm sample_names.txt.temp
+   ```
+
+   </details>
+
+<details>
+   <summary>4) Finally, I ran the script. It took forever to make it to the top of the queue. The script is *02.run_vary_cool.sh*.</summary>
+
+   ```bash
+#!/bin/bash
+#SBATCH -J SNP_call_attempt2
+#SBATCH -A ACF-UTK0032
+#SBATCH --partition=long
+#SBATCH --qos=long
+#SBATCH --nodes=1
+#SBATCH --ntasks=2
+#SBATCH --time=6-00:00:00
+#SBATCH --error=logs/job.SNP_call.e%J
+#SBATCH --output=logs/job.SNP_call.o%J
+#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH --mail-user=mquigg1@vols.utk.edu
+
+source "$(conda info --base)/etc/profile.d/conda.sh"
+conda activate vary_cool
+
+export NXF_OPTS="-Xms500M -Xmx2G"
+export NXF_ANSI_LOG=false
+
+nextflow /lustre/isaac24/scratch/mquigg1/tails_GWAS/00.vary_cool/vary_cool/main.nf \
+    --publish_dir /lustre/isaac24/scratch/mquigg1/tails_GWAS/01.vary_cool_output \
+    --input /lustre/isaac24/scratch/mquigg1/tails_GWAS/metadata.csv \
+    --genome /lustre/isaac24/scratch/mquigg1/tails_GWAS/00.references/pe57_v-T-B.H.C.C.A.A.FINAL.hap1.fasta \
+    --skip_qc false \
+    --skip_trim false \
+    --skip_mark_dupe false \
+    --aligner bwa_mem \
+    --ploidy 2 \
+    --chunks 12 \
+    --caller bcftools \
+    --bp_intervals 10000000 \
+    -profile slurm,custom \
+    -resume
+   ```
+
+   </details>
