@@ -17,7 +17,7 @@ I was sent the phenotype information from the collaborators at the USFS. There a
 
 <details>
   <summary>Script</summary>
-  ---
+---
 title: "phenotype_prelim"
 author: "m quigg"
 date: "2026-07-14"
@@ -28,13 +28,13 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#Phenotype Preliminary Analysis
+# Phenotype Preliminary Analysis
 The purpose of this is to take a look at the resistance phenotype data the the USFS provided. They inoculated the trees with EAB eggs, then looked at the number of larvae that were remaining. 
 
-##Goal 
+## Goal 
 See the distribution of the data to get an idea of what would be good covariables for the GWAS.
 
-##Prep
+## Prep
 ```{r, include=FALSE}
 ###activate packages
 library(tidyverse)
@@ -66,9 +66,9 @@ pheno_data=pheno_data %>%
 ```
 
 
-##USFS Relevant Stats
+## USFS Relevant Stats
 
-###Proportion Host Kill (pHK or pTK)
+### Proportion Host Kill (pHK or pTK)
 This is the number of larvae that host killed divided by the number of good eggs.
 ```{r}
 ###basic stats
@@ -95,7 +95,7 @@ pHK_plot
 ```
 Ok so hist() broke it into bins with 0.1 intervals. There are a lot of individuals in the 0-0.1 pHK category.
 
-###Realized Dose
+### Realized Dose
 This is the number of good eggs per tree.
 ```{r}
 max(pheno_data$RlzDose)
@@ -108,7 +108,7 @@ RlzDose_plot=ggplot(pheno_data, aes(x = RlzDose)) +
 RlzDose_plot
 ```
 
-###Proportion 3 and 4 Instar Larvae
+### Proportion 3 and 4 Instar Larvae
 This is the proportion of recovered larvae that made it to instars 3 and 4. This is a proxy for EAB survival.
 ```{r}
 max(pheno_data$pL34)
@@ -121,7 +121,7 @@ pL34_plot=ggplot(pheno_data, aes(x = pL34)) +
 pL34_plot
 ```
 
-###Large Larvae
+### Large Larvae
 This is the number of large, surviving larvae at instars 3 and 4.
 ```{r}
 max(pheno_data$LgLarv)
@@ -133,14 +133,14 @@ LgLarv_plot=ggplot(pheno_data, aes(x = LgLarv)) +
   theme_classic()
 LgLarv_plot
 ```
-###Make a figure
+### Make a figure
 ```{r}
 (pHK_plot + pL34_plot)/(RlzDose_plot + LgLarv_plot)
 ```
-###Comparisons
+### Comparisons
 Meg suggested that I run some little analyses to see if any of these variables are associated.
 
-####pHK and pL34
+#### pHK and pL34
 ```{r}
 ###pHK vs pL34
 ##make the graph
@@ -170,7 +170,7 @@ pL34_vs_pHK_lm=lm(pHK ~ pL34, pheno_data)
 #-0.8748
 ```
 
-###pHK and RlzDose
+### pHK and RlzDose
 ```{r}
 ###pHK vs RlzDose
 ##make the graph
@@ -201,7 +201,7 @@ Rlzdose_vs_pHK_lm
 #0.001053
 ```
 
-####RlzDose and pL34
+#### RlzDose and pL34
 ```{r}
 ###pHK vs pL34
 ##make the graph
@@ -232,20 +232,20 @@ pL34_vs_RlzDose_lm
 #intercept=418.52
 #-36.39
 ```
-###compare AIC scores
+### compare AIC scores
 ```{r}
 AIC(pHK_vs_pL34_lm, pHK_vs_RlzDose_lm, pL34_vs_pHK_lm, pL34_vs_RlzDose_lm, Rlzdose_vs_pHK_lm, RlzDose_vs_pL34_lm)
 ```
 I don't think this is really telling us anything.
 
-###Make a figure
+### Make a figure
 ```{r}
 (pHK_vs_pL34_plot + pHK_vs_RlzDose_plot) / (pL34_vs_pHK_plot + pL34_vs_RlzDose_plot) / (RlzDose_vs_pHK_plot + RlzDose_vs_pL34_plot)
 ```
 
 
 
-##Other Relevant Visuals
+## Other Relevant Visuals
 I want to make a stacked bar chart with the good and bad eggs per tree. This is going to have a lot of bars, but I think it'll work.
 ```{r}
 ###create the data frame
@@ -261,7 +261,7 @@ ggplot(egg_long, aes(x = IndShortName, y = count, fill = egg)) +
 So that doesn't look like what I wanted, but it works!
 
 
-###Parents
+### Parents
 ```{r}
 summary_families=pheno_data %>% 
   group_by(Family) %>% 
@@ -301,10 +301,10 @@ male_plot
 family_plot/(female_plot+male_plot)
 ```
 
-##Family Values <3
+## Family Values <3
 Now, I want to show how the phenotyping values vary by family.
 
-###pHK
+### pHK
 ```{r}
 family_pHK=pheno_data %>% 
   group_by(Family) %>% 
@@ -334,7 +334,7 @@ ggplot(pheno_data, aes(x = pHK)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 ```
 
-###pL34
+### pL34
 ```{r}
 family_pL34=pheno_data %>% 
   group_by(Family) %>% 
@@ -364,7 +364,7 @@ ggplot(pheno_data, aes(x = pL34)) +
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
 ```
 
-###RlzDose
+### RlzDose
 ```{r}
 family_RlzDose=pheno_data %>% 
   group_by(Family) %>% 
@@ -387,7 +387,7 @@ family_RlzDose_plot=ggplot(family_RlzDose, aes(x = Family, y = mean)) +
 family_RlzDose_plot
 ```
 
-###LgLarv
+### LgLarv
 ```{r}
 family_LgLarv=pheno_data %>% 
   group_by(Family) %>% 
@@ -410,15 +410,15 @@ family_LgLarv_plot=ggplot(family_LgLarv, aes(x = Family, y = mean)) +
 family_LgLarv_plot
 ```
 
-###figure
+### figure
 ```{r}
 family_pHK_plot / family_pL43_plot
 ```
 
-##Species Distributions
+## Species Distributions
 Now, I want to take a look at the absolute disaster that is the species groupings.
 
-###Add the species info
+### Add the species info
 I created a column called "Species-ish" which lists if it is a hybrid and what kind. There are a lot of combos here.
 ```{r}
 ###import the data
@@ -428,7 +428,7 @@ species=read.csv("USFS_Tails_Metadata_2023.xlsx - Parentage_Species_IDs(Marne'sV
 species_pheno_data=left_join(pheno_data, species, by = "Family")
 ```
 
-###pHK
+### pHK
 ```{r}
 species_pHK=species_pheno_data %>% 
   group_by(Species.ish) %>% 
@@ -459,7 +459,7 @@ species_pHK_facet=ggplot(species_pheno_data, aes(x = pHK)) +
 species_pHK_facet
 ```
 
-###pL34
+### pL34
 ```{r}
 species_pL34=species_pheno_data %>% 
   group_by(Species.ish) %>% 
@@ -490,16 +490,16 @@ species_pL34_facet=ggplot(species_pheno_data, aes(x = pL34)) +
 species_pL34_facet
 ```
 
-###making figures
+### making figures
 ```{r}
 (species_pHK_plot + species_pL43_plot) / (species_pHK_facet + species_pL34_facet)
 ```
 That's not a great figure but they look interesting on their own.
 
-##What do we need?
+## What do we need?
 So we have a fair number of individuals that don't have phenotype or species data. I need to identify what individuals were missing phenotype data for, and which families don't have species data.
 
-###No phenotype data
+### No phenotype data
 ```{r}
 ###join the dataframes
 pheno_data_withNA=left_join(inds_seq, pheno_data, by = "IndShortName")
@@ -513,7 +513,7 @@ missing_pheno=pheno_data_withNA %>%
 write.csv(missing_pheno, "C:/Users/mquig/Desktop/ash/GWAS_tails/phenotype/missing_phenotypes.csv")
 ```
 
-###no species data
+### no species data
 ```{r}
 missing_species=species_pheno_data %>% 
   filter(is.na(Species.ish)) %>% 
