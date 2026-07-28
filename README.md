@@ -536,68 +536,66 @@ Some families clearly score better than others. We want a high pHK and a low pL3
 # Attempt 1: 369 samples (started 7/27/2026)
 For my first GWAS attempt, I am going to run it on the 369 individuals that we have both genotype and phenotype data on. This includes greenish and whiteish ash, and both sexes. I am putting all of the associated script in a parent folder called **attempt1_7-27-2026**.
 
-## Step 2: Variant Calling
-For this, I am using the **vary_cool** pipeline developed by the incredible, amazing, wonderful Staton lab. The github is available [here](https://github.com/statonlab/vary_cool). All scripts used in this are in folder **Step2**. It takes raw fastq files and gives you a nice VCF file. 
+<details>
+   <summary>Script</summary>
 
-  1) I moved all of the files from the shared directory to my scratch folder with the script *00.move_files.sh*.
-     <details>
-       <summary>Script</summary>
-       ```{r}
-         #!/bin/bash
-        #SBATCH --job-name=move_analysis
-        #SBATCH --nodes=1
-        #SBATCH --ntasks=1
-        #SBATCH --cpus-per-task=15
-        #SBATCH --mem=32G
-        #SBATCH -A ACF-UTK0011
-        ```
-#SBATCH --partition=short
-#SBATCH --qos=short
-#SBATCH --output=logs/cp_fqgz_%j.out
-#SBATCH --error=logs/cp_fqgz_%j.err
-#SBATCH --time=2:00:00
-#SBATCH --mail-type=BEGIN,END,FAIL
-#SBATCH --mail-user=mquigg1@vols.utk.edu
+   ```bash
+   #!/bin/bash
+   #SBATCH --job-name=move_analysis
+   #SBATCH --nodes=1
+   #SBATCH --ntasks=1
+   #SBATCH --cpus-per-task=15
+   #SBATCH --mem=32G
+   #SBATCH -A ACF-UTK0011
+   #SBATCH --partition=short
+   #SBATCH --qos=short
+   #SBATCH --output=logs/cp_fqgz_%j.out
+   #SBATCH --error=logs/cp_fqgz_%j.err
+   #SBATCH --time=2:00:00
+   #SBATCH --mail-type=BEGIN,END,FAIL
+   #SBATCH --mail-user=mquigg1@vols.utk.edu
 
-export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
+   export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK}
 
-# ─── USER CONFIGURATION ──────────────────────────────────────────────────────
-SOURCE_DIR="/lustre/isaac24/proj/UTK0032/TSIP_ash/NRS_data_master"
-DEST_PATH="/lustre/isaac24/scratch/mquigg1/tails_GWAS/00.input_data"
-PARALLEL_JOBS=15
-# ─────────────────────────────────────────────────────────────────────────────
+   # ─── USER CONFIGURATION ──────────────────────────────────────────────────────
+   SOURCE_DIR="/lustre/isaac24/proj/UTK0032/TSIP_ash/NRS_data_master"
+   DEST_PATH="/lustre/isaac24/scratch/mquigg1/tails_GWAS/00.input_data"
+   PARALLEL_JOBS=15
+   # ─────────────────────────────────────────────────────────────────────────────
 
-# Activate conda environment properly in a non-interactive shell
-source "$(conda info --base)/etc/profile.d/conda.sh"
-conda activate basics
+   # Activate conda environment properly in a non-interactive shell
+   source "$(conda info --base)/etc/profile.d/conda.sh"
+   conda activate basics
 
-# Create log dir if it doesn't exist
-mkdir -p logs
+   # Create log dir if it doesn't exist
+   mkdir -p logs
 
-echo "Job started: $(date)"
-echo "Searching for .fq.gz files under: ${SOURCE_DIR}"
+   echo "Job started: $(date)"
+   echo "Searching for .fq.gz files under: ${SOURCE_DIR}"
 
-# Find all .fq.gz files recursively (following symlinks with -L),
-# then copy each file in parallel, dereferencing symlinks with rsync -L
-find -L "${SOURCE_DIR}" -type f -name "*.fq.gz" | \
-    parallel --jobs "${PARALLEL_JOBS}" \
-             --plain \
-             --joblog logs/parallel_transfer_log_${SLURM_JOB_ID}.txt \
-             --resume \
-    "rsync -aL {} ${DEST_PATH}/"
+   # Find all .fq.gz files recursively (following symlinks with -L),
+   # then copy each file in parallel, dereferencing symlinks with rsync -L
+   find -L "${SOURCE_DIR}" -type f -name "*.fq.gz" | \
+       parallel --jobs "${PARALLEL_JOBS}" \
+                --plain \
+                --joblog logs/parallel_transfer_log_${SLURM_JOB_ID}.txt \
+                --resume \
+       "rsync -aL {} ${DEST_PATH}/"
 
-EXIT_CODE=$?
+   EXIT_CODE=$?
 
-if [ ${EXIT_CODE} -eq 0 ]; then
-    echo "All copies completed successfully."
-else
-    echo "One or more copies failed. Check logs/parallel_transfer_log_${SLURM_JOB_ID}.txt for details."
-fi
+   if [ ${EXIT_CODE} -eq 0 ]; then
+       echo "All copies completed successfully."
+   else
+       echo "One or more copies failed. Check logs/parallel_transfer_log_${SLURM_JOB_ID}.txt for details."
+   fi
 
-echo "Job finished: $(date)"
-exit ${EXIT_CODE}
-       ```
-     </details>
+   echo "Job finished: $(date)"
+   exit ${EXIT_CODE}
+   ```
+
+   </details>
+
   3) I used Claude to write a script that takes the sampleID from a csv file and moves it into a folder. In this case, I made a csv file with all of the individuals that we have phenotype data for and directed them into a new folder. This is script *00.move_files_csv.sh*. This does not use slurm, so execute it [bash organize_fastq.sh ./fastq_files samples.csv ./matched_samples].
   4) Next, I made a metadata table. Vary_cool is vary_particular about the metadata file so I copied some script from Zane. It is in *01.create.metadata*. That metadata file needs to be in the parent GWAS folder so it can be accessed by nextflow.
   5) Finally, I ran the script. It took forever to make it to the top of the queue. The script is *02.run_vary_cool.sh*.
