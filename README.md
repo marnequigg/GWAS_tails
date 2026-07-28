@@ -933,7 +933,7 @@ e.g. subsetted and filtered VCF and .csv files
   4) covariate file
 
        - same format as the phenotype file but can only be used with the lm and lmm
-       - probably good to include year as a covariate or incorporate as a random effect somehow
+       - probably good to include year and DBH as a covariate or incorporate as a random effect somehow
   5) gene file
 
        - gene regions in the genome
