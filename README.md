@@ -542,7 +542,8 @@ For this, I am using the **vary_cool** pipeline developed by the incredible, ama
   1) I moved all of the files from the shared directory to my scratch folder with the script *00.move_files.sh*.
       <details>
         <summary>Script</summary>
-        #!/bin/bash
+```
+#!/bin/bash
 #SBATCH --job-name=move_analysis
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -594,6 +595,7 @@ fi
 
 echo "Job finished: $(date)"
 exit ${EXIT_CODE}
+```
       </details>
   2) 
   3) I used Claude to write a script that takes the sampleID from a csv file and moves it into a folder. In this case, I made a csv file with all of the individuals that we have phenotype data for and directed them into a new folder. This is script *00.move_files_csv.sh*. This does not use slurm, so execute it [bash organize_fastq.sh ./fastq_files samples.csv ./matched_samples].
