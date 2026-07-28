@@ -540,8 +540,8 @@ For my first GWAS attempt, I am going to run it on the 369 individuals that we h
 For this, I am using the **vary_cool** pipeline developed by the incredible, amazing, wonderful Staton lab. The github is available [here](https://github.com/statonlab/vary_cool). All scripts used in this are in folder **Step2**. It takes raw fastq files and gives you a nice VCF file. 
 
   1) I moved all of the files from the shared directory to my scratch folder with the script *00.move_files.sh*.
-      <details>
-        <summary>Script</summary>
+<details>
+    <summary>Script</summary>
 ```
 #!/bin/bash
 #SBATCH --job-name=move_analysis
@@ -596,7 +596,7 @@ fi
 echo "Job finished: $(date)"
 exit ${EXIT_CODE}
 ```
-      </details>
+</details>
   2) 
   3) I used Claude to write a script that takes the sampleID from a csv file and moves it into a folder. In this case, I made a csv file with all of the individuals that we have phenotype data for and directed them into a new folder. This is script *00.move_files_csv.sh*. This does not use slurm, so execute it [bash organize_fastq.sh ./fastq_files samples.csv ./matched_samples].
   4) Next, I made a metadata table. Vary_cool is vary_particular about the metadata file so I copied some script from Zane. It is in *01.create.metadata*. That metadata file needs to be in the parent GWAS folder so it can be accessed by nextflow.
