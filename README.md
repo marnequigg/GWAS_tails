@@ -743,6 +743,7 @@ nextflow /lustre/isaac24/scratch/mquigg1/tails_GWAS/00.vary_cool/vary_cool/main.
 Zane recommended two different options for analysis.
   1) [vcf2gwas with GEMMA](https://github.com/frankvogt/vcf2gwas)
   2) [GAPIT](https://github.com/jiabowang/GAPIT)
+
 I'm going to start with option 1) vcf2gwas.
 
 <details>
@@ -921,3 +922,17 @@ reduces reproducibility
 keep all temporary intermediate files
 e.g. subsetted and filtered VCF and .csv files
 </details>
+
+### Input Files
+  1) VCF file
+       -SNP data from the vary_cool pipeline
+  2) phenotype file
+       -csv file with the first column as the sample IDs and the second as the phenotype (probably pHK) with a header
+  3) covariate file
+       -same format as the phenotype file but can only be used with the lm and lmm
+       -probably good to include year as a covariate or incorporate as a random effect somehow
+  4) gene file
+       -gene regions in the genome
+       -need to get from Zane
+  5) relatedness matrix
+       -it will calculate by default
