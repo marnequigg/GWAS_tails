@@ -536,6 +536,7 @@ Some families clearly score better than others. We want a high pHK and a low pL3
 # Attempt 1: 369 samples (started 7/27/2026)
 For my first GWAS attempt, I am going to run it on the 369 individuals that we have both genotype and phenotype data on. This includes greenish and whiteish ash, and both sexes. I am putting all of the associated script in a parent folder called **attempt1_7-27-2026**.
 
+## Step 2: SNP Calling
 <details>
    <summary>1) First, I moved the files with the slurm script *00.move_files.sh*.</summary>
 
