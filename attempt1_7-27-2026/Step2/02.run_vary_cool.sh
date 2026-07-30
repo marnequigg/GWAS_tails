@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH -J SNP_call_attempt2
 #SBATCH -A ACF-UTK0032
-#SBATCH --partition=long
-#SBATCH --qos=long
+#SBATCH --partition=long-bigmem
+#SBATCH --qos=long-bigmem
 #SBATCH --nodes=1
 #SBATCH --ntasks=2
 #SBATCH --time=6-00:00:00
